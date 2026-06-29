@@ -189,12 +189,12 @@
                             <label class="kpi-label">CD Operacional</label>
                             <select id="cd" class="input-premium mt-1" required>
                                 <option value="">Selecione o CD...</option>
-                                <option value="BRFPE1">BRFPE1 - Pernambuco</option>
-                                <option value="BRFSP1">BRFSP1 - São Paulo 1</option>
-                                <option value="BRFSP2">BRFSP2 - São Paulo 2</option>
-                                <option value="BRFGO1">BRFGO1 - Goiás</option>
-                                <option value="BRFMG1">BRFMG1 - Minas Gerais</option>
-                                <option value="BRFRS1">BRFRS1 - Rio G. do Sul</option>
+                                <option value="BRFPE1">BRFPE1</option>
+                                <option value="BRFSP1">BRFSP1</option>
+                                <option value="BRFSP2">BRFSP2</option>
+                                <option value="BRFGO1">BRFGO1</option>
+                                <option value="BRFMG1">BRFMG1</option>
+                                <option value="BRFRS1">BRFRS1</option>
                             </select>
                         </div>
                         <div>
@@ -341,7 +341,7 @@
     // ---------------------------------------------------------
     // CONFIGURAÇÃO: COLE SUA URL DO APPS SCRIPT ABAIXO
     // ---------------------------------------------------------
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxczQ1aZ3PT43KjNtNIHXQSYSPK0MRe7KAGc9sMPwNBDVgeJNWyq0nen4Qq5Y1q8shx/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyKbFNMvHsCOtIGlbcgcRcEFr3UhF7o5tXd1TGeu8V45r9HefID0ZQdW1vhiV0wSWg/exec";
     
     let rawData = [];
     const chartInstances = {};
@@ -414,7 +414,7 @@
         };
 
         try {
-            await fetch(WEB_APP_URL, {
+            await fetch('https://script.google.com/macros/s/AKfycbyKbFNMvHsCOtIGlbcgcRcEFr3UhF7o5tXd1TGeu8V45r9HefID0ZQdW1vhiV0wSWg/exec1'), {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
