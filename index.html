@@ -34,10 +34,11 @@
             line-height: 1.3;
             font-size: 12px;
             margin: 0;
+            overflow-x: hidden;
         }
 
         /* Scrollbar customizada */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-deep); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--shopee-orange); }
@@ -62,6 +63,7 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease;
         }
 
         .input-premium {
@@ -95,7 +97,11 @@
             cursor: pointer;
             border: none;
             width: 100%;
+            transition: opacity 0.2s;
         }
+
+        .btn-shopee:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-shopee:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .nav-tab {
             color: var(--text-dim);
@@ -121,33 +127,57 @@
             align-items: center;
         }
 
-        .kpi-value { font-size: 24px; font-weight: 800; }
-        .kpi-label { font-size: 10px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 0.5px; }
+        .kpi-value { font-size: 24px; font-weight: 800; line-height: 1.2; }
+        .kpi-label { font-size: 10px; text-transform: uppercase; color: var(--text-dim); letter-spacing: 0.5px; font-weight: 700; }
 
         .chart-container {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 15px;
-            height: 320px;
+            height: 300px;
         }
 
-        table { width: 100%; border-collapse: collapse; }
-        th { background: #161b22; color: var(--text-dim); text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; sticky: top; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 11px; }
-        tr:hover { background: rgba(255,255,255,0.02); }
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th { background: #161b22; color: var(--text-dim); text-align: left; padding: 12px; font-size: 10px; text-transform: uppercase; position: sticky; top: 0; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 11px; color: #c9d1d9; }
+        tr:hover { background: rgba(255,255,255,0.03); }
 
         .heatmap-grid { display: grid; grid-template-columns: 60px repeat(24, 1fr); gap: 2px; }
-        .heatmap-cell { height: 25px; background: #161b22; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+        .heatmap-cell { height: 25px; background: #161b22; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: bold; }
+
+        .status-pill {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        /* Animação de Loading */
+        .loader {
+            width: 12px; height: 12px;
+            border: 2px solid #FFF; border-bottom-color: transparent;
+            border-radius: 50%; display: inline-block;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- TELA DE LOGIN -->
 <div id="login-screen" class="min-h-screen flex items-center justify-center bg-black">
     <div class="card-master w-full max-w-sm text-center">
         <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="h-10 mx-auto mb-6" alt="Shopee">
-        <h1 class="text-lg font-bold mb-6">Operations Control</h1>
+        <h1 class="text-lg font-bold mb-2">Operations Control</h1>
+        <p class="text-slate-500 text-[10px] mb-6 uppercase tracking-widest">Acesso Corporativo</p>
         <form onsubmit="handleLogin(event)">
             <div class="text-left mb-4">
                 <label class="kpi-label">E-mail Corporativo</label>
@@ -158,7 +188,7 @@
     </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- INTERFACE PRINCIPAL -->
 <div id="main-interface" class="hidden">
     <header class="shopee-header">
         <div class="flex items-center gap-3">
@@ -170,14 +200,17 @@
             <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab">DASHBOARD</button>
         </nav>
         <div class="flex items-center gap-4">
-            <span id="user-display" class="text-xs font-semibold text-slate-400"></span>
+            <div class="text-right hidden sm:block">
+                <div id="user-display" class="text-[10px] font-bold text-slate-200"></div>
+                <div class="text-[9px] text-green-500 font-bold uppercase">Sessão Ativa</div>
+            </div>
             <button onclick="handleLogout()" class="text-slate-500 hover:text-red-500 transition-colors"><i class="fas fa-power-off"></i></button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto p-6">
         
-        <!-- REGISTRO -->
+        <!-- SEÇÃO DE REGISTRO -->
         <section id="section-registro" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2 card-master">
                 <h2 class="text-sm font-bold mb-6 flex items-center gap-2">
@@ -225,7 +258,7 @@
                         </div>
                         <div>
                             <label class="kpi-label">Tempo Parado (minutos)</label>
-                            <input type="number" id="tempo" class="input-premium mt-1" placeholder="Ex: 20" required>
+                            <input type="number" id="tempo" class="input-premium mt-1" placeholder="Ex: 20" required min="1">
                         </div>
                     </div>
                     <div class="mb-4">
@@ -244,93 +277,98 @@
             
             <div class="space-y-6">
                 <div class="card-master">
-                    <h3 class="kpi-label mb-4">Metadados do Registro</h3>
+                    <h3 class="kpi-label mb-4">Status da Conexão</h3>
                     <div class="space-y-3">
                         <div class="flex justify-between border-b border-white/5 pb-2">
-                            <span class="text-slate-500">Status:</span>
-                            <span class="text-green-500 font-bold">● Conectado</span>
+                            <span class="text-slate-500 font-bold uppercase text-[9px]">API Status</span>
+                            <span class="text-green-500 font-bold">ONLINE</span>
                         </div>
                         <div class="flex justify-between border-b border-white/5 pb-2">
-                            <span class="text-slate-500">Data:</span>
-                            <span id="live-date">--/--/----</span>
+                            <span class="text-slate-500 font-bold uppercase text-[9px]">Data Local</span>
+                            <span id="live-date" class="font-mono">--/--/----</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-500">Hora:</span>
-                            <span id="live-time">00:00:00</span>
+                            <span class="text-slate-500 font-bold uppercase text-[9px]">Hora Local</span>
+                            <span id="live-time" class="font-mono">00:00:00</span>
                         </div>
                     </div>
                 </div>
-                <div class="p-6 rounded-xl bg-gradient-to-br from-orange-600/20 to-transparent border border-orange-500/20">
-                    <p class="text-[11px] text-orange-200/60 leading-relaxed italic">
-                        "Lembre-se de detalhar o motivo técnico para que o time de manutenção possa atuar na causa raiz."
-                    </p>
+                <div class="p-6 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                    <div class="flex gap-3">
+                        <i class="fas fa-lightbulb text-orange-500 mt-1"></i>
+                        <p class="text-[11px] text-slate-300 leading-relaxed">
+                            <strong>Dica Shopee:</strong> Registre o incidente assim que ele ocorrer para garantir a precisão dos dados de Downtime no Dashboard em tempo real.
+                        </p>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- DASHBOARD -->
+        <!-- SEÇÃO DE DASHBOARD -->
         <section id="section-dashboard" class="hidden space-y-6">
             
-            <!-- KPIs -->
+            <!-- INDICADORES (KPIs) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Total Ocorrências</div><div id="kpi-total" class="kpi-value">0</div></div>
-                    <div class="text-orange-500 text-2xl"><i class="fas fa-clipboard-check"></i></div>
+                <div class="kpi-card border-l-4 border-l-orange-500">
+                    <div><div class="kpi-label">Total Ocorrências</div><div id="kpi-total" class="kpi-value text-white">0</div></div>
+                    <div class="text-orange-500/30 text-3xl"><i class="fas fa-clipboard-list"></i></div>
                 </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Downtime Total</div><div id="kpi-minutos" class="kpi-value text-red-500">0</div></div>
-                    <div class="text-red-500 text-2xl"><i class="fas fa-stopwatch"></i></div>
+                <div class="kpi-card border-l-4 border-l-red-500">
+                    <div><div class="kpi-label">Downtime Acumulado</div><div id="kpi-minutos" class="kpi-value text-red-500">0</div></div>
+                    <div class="text-red-500/30 text-3xl"><i class="fas fa-clock"></i></div>
                 </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Média por Falha</div><div id="kpi-media" class="kpi-value text-amber-500">0</div></div>
-                    <div class="text-amber-500 text-2xl"><i class="fas fa-chart-pie"></i></div>
+                <div class="kpi-card border-l-4 border-l-amber-500">
+                    <div><div class="kpi-label">Média de Parada</div><div id="kpi-media" class="kpi-value text-amber-500">0</div></div>
+                    <div class="text-amber-500/30 text-3xl"><i class="fas fa-hourglass-half"></i></div>
                 </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Setor Crítico</div><div id="kpi-setor" class="kpi-value text-purple-500">-</div></div>
-                    <div class="text-purple-500 text-2xl"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="kpi-card border-l-4 border-l-purple-500">
+                    <div><div class="kpi-label">Área mais Afetada</div><div id="kpi-setor" class="kpi-value text-purple-400">-</div></div>
+                    <div class="text-purple-500/30 text-3xl"><i class="fas fa-industry"></i></div>
                 </div>
             </div>
 
-            <!-- CHARTS -->
+            <!-- GRÁFICOS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="chart-container">
-                    <h3 class="kpi-label mb-4">Volume de Incidentes por Tipo</h3>
+                    <h3 class="kpi-label mb-4">Incidentes por Categoria</h3>
                     <canvas id="chartTipos"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h3 class="kpi-label mb-4">Impacto em Minutos por CD</h3>
+                    <h3 class="kpi-label mb-4">Minutos Perdidos por CD</h3>
                     <canvas id="chartImpacto"></canvas>
                 </div>
             </div>
 
-            <!-- TABLE -->
+            <!-- TABELA DE DADOS -->
             <div class="card-master">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="kpi-label">Histórico de Respostas (Últimos 100)</h3>
-                    <button onclick="syncData()" class="text-[10px] bg-white/5 hover:bg-white/10 px-3 py-1 rounded transition">
-                        <i class="fas fa-sync-alt mr-1"></i> Atualizar Dados
+                    <h3 class="kpi-label">Base de Dados em Tempo Real</h3>
+                    <button onclick="syncData()" id="btnRefresh" class="text-[10px] bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg font-bold transition flex items-center gap-2">
+                        <i class="fas fa-sync-alt"></i> ATUALIZAR DASHBOARD
                     </button>
                 </div>
-                <div class="overflow-x-auto max-h-[400px]">
+                <div class="table-wrapper max-h-[400px]">
                     <table id="mainTable">
                         <thead>
                             <tr>
-                                <th>Data/Hora</th>
+                                <th>Timestamp</th>
                                 <th>CD</th>
-                                <th>Tipo</th>
+                                <th>Tipo de Falha</th>
                                 <th>Área</th>
-                                <th>Downtime</th>
+                                <th>Tempo</th>
                                 <th>Descrição</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBody"></tbody>
+                        <tbody id="tableBody">
+                            <tr><td colspan="6" class="text-center py-10 text-slate-500">Nenhum dado carregado...</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- HEATMAP -->
+            <!-- MAPA DE CALOR -->
             <div class="card-master">
-                <h3 class="kpi-label mb-4">Concentração Horária de Incidentes (24h)</h3>
+                <h3 class="kpi-label mb-4 text-orange-500"><i class="fas fa-fire mr-2"></i>Concentração de Falhas por Horário (Heatmap)</h3>
                 <div id="heatmapContainer" class="overflow-x-auto pb-2"></div>
             </div>
         </section>
@@ -339,14 +377,14 @@
 
 <script>
     // ---------------------------------------------------------
-    // CONFIGURAÇÃO: COLE SUA URL DO APPS SCRIPT ABAIXO
+    // URL CONECTADA AO SEU APPS SCRIPT
     // ---------------------------------------------------------
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyKbFNMvHsCOtIGlbcgcRcEFr3UhF7o5tXd1TGeu8V45r9HefID0ZQdW1vhiV0wSWg/exec";
     
     let rawData = [];
     const chartInstances = {};
 
-    // Inicialização
+    // Inicialização da Página
     window.onload = () => {
         checkSession();
         updateLiveClock();
@@ -355,22 +393,29 @@
 
     function updateLiveClock() {
         const now = new Date();
-        if(document.getElementById('live-date')) document.getElementById('live-date').innerText = now.toLocaleDateString();
-        if(document.getElementById('live-time')) document.getElementById('live-time').innerText = now.toLocaleTimeString();
+        const dateEl = document.getElementById('live-date');
+        const timeEl = document.getElementById('live-time');
+        if(dateEl) dateEl.innerText = now.toLocaleDateString('pt-BR');
+        if(timeEl) timeEl.innerText = now.toLocaleTimeString('pt-BR');
     }
 
+    // Gerenciamento de Sessão (Simulado para Shopee)
     function handleLogin(e) {
         e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        if(email.includes('@')) {
+        const email = document.getElementById('loginEmail').value.toLowerCase();
+        if(email.includes('@shopee.com') || email.includes('@shopeemobile.com') || email.includes('@')) {
             sessionStorage.setItem("shopee_user", email);
             checkSession();
+        } else {
+            alert("Por favor, utilize um e-mail corporativo válido.");
         }
     }
 
     function handleLogout() {
-        sessionStorage.clear();
-        location.reload();
+        if(confirm("Deseja encerrar a sessão?")) {
+            sessionStorage.clear();
+            location.reload();
+        }
     }
 
     function checkSession() {
@@ -382,22 +427,26 @@
         }
     }
 
+    // Navegação entre Abas
     function switchTab(tab) {
         document.getElementById('section-registro').classList.toggle('hidden', tab !== 'registro');
         document.getElementById('section-dashboard').classList.toggle('hidden', tab !== 'dashboard');
         document.getElementById('tab-registro').classList.toggle('active', tab === 'registro');
         document.getElementById('tab-dashboard').classList.toggle('active', tab === 'dashboard');
-        if (tab === 'dashboard') syncData();
+        
+        if (tab === 'dashboard') {
+            syncData();
+        }
     }
 
-    // REGISTRO (POST)
+    // FUNÇÃO: REGISTRAR (POST para Google Sheets)
     async function handleRegister(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSave');
-        const originalText = btn.innerHTML;
+        const originalContent = btn.innerHTML;
         
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gravando...';
+        btn.innerHTML = '<span class="loader"></span> GRAVANDO...';
 
         const now = new Date();
         const payload = {
@@ -414,54 +463,69 @@
         };
 
         try {
-            await fetch('https://script.google.com/macros/s/AKfycbyKbFNMvHsCOtIGlbcgcRcEFr3UhF7o5tXd1TGeu8V45r9HefID0ZQdW1vhiV0wSWg/exec1'), {
+            // Usamos mode: 'no-cors' para Google Apps Script POST
+            await fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
             
-            alert("✅ Sucesso! Incidente gravado na planilha.");
+            alert("✅ Incidente registrado com sucesso na planilha Shopee!");
             document.getElementById('incidentForm').reset();
         } catch (err) {
-            alert("Erro ao conectar com a planilha. Verifique a URL do App Script.");
+            console.error(err);
+            alert("Erro ao gravar dados. Verifique sua conexão.");
         } finally {
             btn.disabled = false;
-            btn.innerHTML = originalText;
+            btn.innerHTML = originalContent;
         }
     }
 
-    // DASHBOARD (GET)
+    // FUNÇÃO: SINCRONIZAR (GET da Google Sheets)
     async function syncData() {
+        const btn = document.getElementById('btnRefresh');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> SINCRONIZANDO...';
+
         try {
             const response = await fetch(WEB_APP_URL);
-            const json = await response.json();
+            const data = await response.json();
             
-            // Mapeamento Robusto de Colunas (Normalização)
-            rawData = json.map(row => ({
-                ts: row["Carimbo de data/hora"] || row["timestamp"] || "",
-                cd: row["CD Operacional"] || row["cd"] || "",
-                tipo: row["Tipo de Ocorrência"] || row["tipoOcorrencia"] || "",
-                area: row["Área / Setor"] || row["area"] || "",
-                minutos: parseFloat(row["Tempo de Parada (minutos)"] || row["tempoParado"] || 0),
-                desc: row["Descrição Detalhada"] || row["descricao"] || "",
-                obs: row["Observações Operacionais"] || row["observacao"] || ""
-            }));
-
-            updateDashboard();
+            if (data && data.length > 0) {
+                // Mapeamento normalizado para garantir que os campos funcionem independente do nome da coluna na Sheet
+                rawData = data.map(item => {
+                    const keys = Object.keys(item);
+                    return {
+                        timestamp: item[keys[0]] || "", // Geralmente Carimbo de Data
+                        cd: item["cd"] || item["CD Operacional"] || "",
+                        tipo: item["tipoOcorrencia"] || item["Tipo de Ocorrência"] || "",
+                        area: item["area"] || item["Área / Setor"] || "",
+                        tempo: parseFloat(item["tempoParado"] || item["Tempo de Parada (minutos)"] || 0),
+                        desc: item["descricao"] || item["Descrição Detalhada"] || "",
+                        obs: item["observacao"] || item["Observações Operacionais"] || ""
+                    };
+                });
+                updateDashboard();
+            }
         } catch (err) {
-            console.error("Erro na sincronização:", err);
+            console.error("Erro ao buscar dados:", err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sync-alt"></i> ATUALIZAR DASHBOARD';
         }
     }
 
     function updateDashboard() {
+        // Cálculo de KPIs
         const total = rawData.length;
-        const totalMin = rawData.reduce((acc, curr) => acc + curr.minutos, 0);
+        const totalMin = rawData.reduce((acc, curr) => acc + curr.tempo, 0);
         const media = total > 0 ? (totalMin / total).toFixed(1) : 0;
         
-        // Encontrar Setor Crítico
-        const areaCounts = {};
-        rawData.forEach(r => areaCounts[r.area] = (areaCounts[r.area] || 0) + 1);
-        const topArea = Object.keys(areaCounts).reduce((a, b) => areaCounts[a] > areaCounts[b] ? a : b, "-");
+        // Determinar Área mais afetada
+        const areaMap = {};
+        rawData.forEach(r => areaMap[r.area] = (areaMap[r.area] || 0) + 1);
+        const topArea = Object.keys(areaMap).reduce((a, b) => areaMap[a] > areaMap[b] ? a : b, "-");
 
         document.getElementById('kpi-total').innerText = total;
         document.getElementById('kpi-minutos').innerText = totalMin + "m";
@@ -475,32 +539,37 @@
 
     function renderTable() {
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = rawData.slice(-100).reverse().map(r => `
+        if (rawData.length === 0) return;
+
+        tbody.innerHTML = rawData.slice(-50).reverse().map(r => `
             <tr>
-                <td class="text-slate-500 font-mono">${r.ts}</td>
-                <td class="font-bold text-blue-400">${r.cd}</td>
-                <td class="text-orange-500 font-semibold">${r.tipo}</td>
-                <td class="text-purple-400 font-bold">${r.area}</td>
-                <td class="text-red-500 font-bold">${r.minutos} min</td>
-                <td class="truncate max-w-[250px]" title="${r.desc}">${r.desc}</td>
+                <td class="font-mono text-slate-500">${r.timestamp}</td>
+                <td class="font-black text-blue-400">${r.cd}</td>
+                <td><span class="status-pill bg-orange-500/20 text-orange-500">${r.tipo}</span></td>
+                <td class="font-bold text-purple-400">${r.area}</td>
+                <td class="font-bold text-red-500">${r.tempo} min</td>
+                <td class="max-w-xs truncate" title="${r.desc}">${r.desc}</td>
             </tr>
         `).join('');
     }
 
     function renderCharts() {
-        // Chart 1: Tipos
-        const tipoData = {};
-        rawData.forEach(r => tipoData[r.tipo] = (tipoData[r.tipo] || 0) + 1);
-        createChart('chartTipos', 'bar', Object.keys(tipoData), Object.values(tipoData), '#ee4d2d');
+        // Gráfico 1: Distribuição por Tipo
+        const tiposContagem = {};
+        rawData.forEach(r => tiposContagem[r.tipo] = (tiposContagem[r.tipo] || 0) + 1);
+        
+        createChart('chartTipos', 'bar', Object.keys(tiposContagem), Object.values(tiposContagem), '#ee4d2d');
 
-        // Chart 2: Impacto por CD
-        const cdData = {};
-        rawData.forEach(r => cdData[r.cd] = (cdData[r.cd] || 0) + r.minutos);
-        createChart('chartImpacto', 'doughnut', Object.keys(cdData), Object.values(cdData), ['#2f81f7','#3fb950','#8957e5','#d29922','#39c5cf']);
+        // Gráfico 2: Impacto em Minutos por CD
+        const cdImpacto = {};
+        rawData.forEach(r => cdImpacto[r.cd] = (cdImpacto[r.cd] || 0) + r.tempo);
+        
+        createChart('chartImpacto', 'doughnut', Object.keys(cdImpacto), Object.values(cdImpacto), ['#ff5722', '#2196f3', '#4caf50', '#ffeb3b', '#9c27b0', '#00bcd4']);
     }
 
-    function createChart(id, type, labels, data, color) {
+    function createChart(id, type, labels, data, colors) {
         if (chartInstances[id]) chartInstances[id].destroy();
+        
         const ctx = document.getElementById(id).getContext('2d');
         chartInstances[id] = new Chart(ctx, {
             type: type,
@@ -508,7 +577,7 @@
                 labels: labels,
                 datasets: [{
                     data: data,
-                    backgroundColor: color,
+                    backgroundColor: colors,
                     borderWidth: 0,
                     borderRadius: 4
                 }]
@@ -516,7 +585,13 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: type === 'doughnut', position: 'bottom', labels: { color: '#8b949e', font: { size: 10 } } } },
+                plugins: {
+                    legend: {
+                        display: type === 'doughnut',
+                        position: 'right',
+                        labels: { color: '#8b949e', font: { size: 10 } }
+                    }
+                },
                 scales: type === 'bar' ? {
                     y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
                     x: { grid: { display: false }, ticks: { color: '#8b949e' } }
@@ -527,29 +602,37 @@
 
     function renderHeatmap() {
         const matrix = Array(7).fill(0).map(() => Array(24).fill(0));
-        const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+        const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
         
         rawData.forEach(r => {
             try {
-                const [d, m, y] = r.ts.split(',')[0].split('/');
-                const date = new Date(y, m-1, d);
-                const dia = date.getDay();
-                const hora = parseInt(r.ts.split(' ')[1].split(':')[0]);
-                if(!isNaN(dia) && !isNaN(hora)) matrix[dia][hora]++;
+                // Tentar extrair data e hora do timestamp formatado (DD/MM/YYYY HH:MM:SS)
+                const parts = r.timestamp.split(' ');
+                const dateParts = parts[0].split('/');
+                const timeParts = parts[1].split(':');
+                
+                const dateObj = new Date(dateParts[2], dateParts[1]-1, dateParts[0]);
+                const day = dateObj.getDay();
+                const hour = parseInt(timeParts[0]);
+                
+                if(!isNaN(day) && !isNaN(hour)) {
+                    matrix[day][hour]++;
+                }
             } catch(e) {}
         });
 
         let html = '<div class="heatmap-grid min-w-[800px]"><div class="h-6"></div>';
-        for(let i=0; i<24; i++) html += `<div class="text-center text-[9px] text-slate-500 font-bold">${i}h</div>`;
+        for(let h=0; h<24; h++) html += `<div class="text-center text-[9px] text-slate-500 font-bold">${h}h</div>`;
         
-        matrix.forEach((row, i) => {
-            html += `<div class="flex items-center text-[10px] font-bold text-slate-400">${days[i]}</div>`;
+        matrix.forEach((row, dIndex) => {
+            html += `<div class="flex items-center text-[10px] font-bold text-slate-400">${dayNames[dIndex]}</div>`;
             row.forEach(val => {
-                const opacity = Math.min(val * 0.2, 1);
-                const bg = val > 0 ? `rgba(238, 77, 45, ${opacity + 0.1})` : '#161b22';
-                html += `<div class="heatmap-cell" style="background: ${bg}; color: ${val > 0 ? '#fff' : '#30363d'}">${val}</div>`;
+                const colorScale = val > 5 ? 'bg-orange-600' : val > 2 ? 'bg-orange-500' : val > 0 ? 'bg-orange-900/50' : 'bg-[#161b22]';
+                const textColor = val > 0 ? 'text-white' : 'text-slate-800';
+                html += `<div class="heatmap-cell ${colorScale} ${textColor}" title="${dayNames[dIndex]}, ${val} ocorrências">${val > 0 ? val : ''}</div>`;
             });
         });
+        
         html += '</div>';
         document.getElementById('heatmapContainer').innerHTML = html;
     }
