@@ -3,314 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopee | Operations Incidents Control</title>
+    <title>Shopee Ops | Command Center</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
             --shopee-orange: #ee4d2d;
-            --shopee-orange-glow: rgba(238, 77, 45, 0.15);
-            --bg-deep: #05070a;
-            --bg-card: #0d1117;
-            --bg-input: #161b22;
-            --border: #30363d;
-            --text-main: #f0f6fc;
-            --text-dim: #8b949e;
-            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --shopee-dark: #0a0a0b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #ff5722;
         }
 
         body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            font-family: var(--font-main);
-            margin: 0;
-            font-size: 13px;
+            background: radial-gradient(circle at 50% 0%, #1a1a1e 0%, var(--shopee-dark) 100%);
+            color: #e2e8f0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
         }
 
-        .shopee-header {
-            background: rgba(13, 17, 23, 0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
-        .card-master {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        .shopee-gradient-text {
+            background: linear-gradient(to right, #fff, var(--shopee-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .input-premium {
-            height: 40px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0 12px;
-            width: 100%;
-            background: var(--bg-input);
-            color: var(--text-main);
-            transition: all 0.2s;
+        .neo-button {
+            background: var(--shopee-orange);
+            box-shadow: 0 0 20px rgba(238, 77, 45, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .input-premium:focus {
-            border-color: var(--shopee-orange);
-            outline: none;
-            box-shadow: 0 0 0 3px var(--shopee-orange-glow);
+        .neo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(238, 77, 45, 0.5);
         }
 
-        .btn-shopee {
-            background: linear-gradient(135deg, #ee4d2d, #ff5722);
+        .input-dark {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
             color: white;
-            font-weight: 700;
-            height: 44px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-transform: uppercase;
-            cursor: pointer;
-            border: none;
-            width: 100%;
+            transition: all 0.3s;
         }
 
-        .nav-tab {
-            color: var(--text-dim);
-            font-weight: 700;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: 0.2s;
-            cursor: pointer;
+        .input-dark:focus {
+            border-color: var(--shopee-orange);
+            background: rgba(238, 77, 45, 0.05);
+            outline: none;
         }
 
-        .nav-tab.active {
-            background: var(--shopee-orange-glow);
+        .kpi-value {
+            font-family: 'JetBrains Mono', monospace;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Heatmap Styles */
+        .heatmap-grid { display: grid; grid-template-columns: 80px repeat(24, 1fr); gap: 4px; }
+        .heatmap-cell { height: 28px; border-radius: 4px; transition: transform 0.2s; cursor: crosshair; }
+        .heatmap-cell:hover { transform: scale(1.1); z-index: 10; border: 1px solid white; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--shopee-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--shopee-orange); }
+
+        .active-tab {
+            border-bottom: 3px solid var(--shopee-orange);
             color: var(--shopee-orange);
         }
 
-        .kpi-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(238, 77, 45, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(238, 77, 45, 0); }
         }
-
-        .kpi-value { font-size: 24px; font-weight: 800; }
-        .kpi-label { font-size: 10px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; }
-
-        .chart-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 15px;
-            height: 300px;
-        }
-
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #161b22; color: var(--text-dim); text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; position: sticky; top: 0; }
-        td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 12px; }
-
-        .heatmap-grid { display: grid; grid-template-columns: 60px repeat(24, 1fr); gap: 2px; }
-        .heatmap-cell { height: 25px; background: #161b22; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; }
-
-        /* Loader */
-        .loader {
-            width: 16px; height: 16px;
-            border: 2px solid #FFF; border-bottom-color: transparent;
-            border-radius: 50%; display: inline-block;
-            animation: rotation 1s linear infinite;
-        }
-        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .pulse { animation: pulse-orange 2s infinite; }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-8">
 
-<!-- LOGIN -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center">
-    <div class="card-master w-full max-w-sm text-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" class="h-10 mx-auto mb-6">
-        <h1 class="text-xl font-bold mb-6">Incidents Control</h1>
-        <form onsubmit="handleLogin(event)">
-            <input type="email" id="loginEmail" class="input-premium mb-4" placeholder="E-mail corporativo" required>
-            <button type="submit" class="btn-shopee">Entrar</button>
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl">
+    <div class="glass-card w-full max-w-md p-10 text-center scale-up-center">
+        <div class="mb-8 flex justify-center">
+            <div class="h-20 w-20 rounded-2xl bg-[#ee4d2d] flex items-center justify-center text-4xl font-black text-white shadow-2xl">S</div>
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-tighter mb-2">OPERATIONS <span class="text-[#ee4d2d]">LOGIN</span></h1>
+        <p class="text-gray-400 text-sm mb-8 font-light">Insira suas credenciais corporativas SPX</p>
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+            <input type="email" id="loginEmail" class="input-dark w-full p-4" placeholder="email@shopee.com" required>
+            <button type="submit" class="neo-button w-full p-4 font-bold uppercase tracking-widest rounded-xl">Iniciar Protocolo</button>
         </form>
     </div>
 </div>
 
-<!-- INTERFACE -->
-<div id="main-interface" class="hidden">
-    <header class="shopee-header">
-        <div class="flex items-center gap-2">
-            <div class="bg-[#ee4d2d] text-white px-2 py-0.5 rounded font-black">S</div>
-            <span class="font-bold uppercase tracking-tight">Operations Control</span>
+<!-- MAIN INTERFACE -->
+<div id="main-interface" class="hidden max-w-7xl mx-auto space-y-8">
+    <!-- HEADER -->
+    <header class="flex flex-col md:flex-row justify-between items-center gap-4 mb-12">
+        <div>
+            <h1 class="text-4xl font-black shopee-gradient-text">SPX INCIDENT MONITOR</h1>
+            <p class="text-gray-500 font-mono text-xs uppercase tracking-[0.3em]">Real-time Operations Intelligence</p>
         </div>
-        <nav class="flex gap-2">
-            <button onclick="switchTab('registro')" id="tab-registro" class="nav-tab active">REGISTRAR</button>
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab">DASHBOARD</button>
+        
+        <nav class="glass-card flex p-1 rounded-2xl">
+            <button onclick="switchTab('registro')" id="tab-registro" class="px-8 py-3 rounded-xl font-bold transition-all active-tab">REGISTRO</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-8 py-3 rounded-xl font-bold transition-all">DASHBOARD</button>
         </nav>
-        <button onclick="handleLogout()" class="text-slate-500 hover:text-red-500"><i class="fas fa-power-off"></i></button>
+
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p id="user-display" class="text-sm font-bold text-white"></p>
+                <p id="live-clock" class="text-orange-500 font-mono text-xs"></p>
+            </div>
+            <button onclick="handleLogout()" class="glass-card h-12 w-12 flex items-center justify-center hover:bg-red-500/20 transition-colors">
+                <i class="fas fa-power-off"></i>
+            </button>
+        </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-6">
+    <!-- SECTION: REGISTRO -->
+    <section id="section-registro" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 glass-card p-8">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="h-2 w-8 bg-orange-500 rounded-full"></div>
+                <h2 class="text-xl font-bold uppercase tracking-tighter">Protocolo de Nova Ocorrência</h2>
+            </div>
+            <form id="incidentForm" onsubmit="handleRegister(event)" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-500 ml-1">CENTRO DE DISTRIBUIÇÃO</label>
+                        <select id="cd" class="input-dark w-full p-4" required>
+                            <option value="">Selecione o CD...</option>
+                            <option value="BRFPE1">BRFPE1</option>
+                            <option value="BRFSP1">BRFSP1</option>
+                            <option value="BRFSP2">BRFSP2</option>
+                            <option value="BRFMG1">BRFMG1</option>
+                            <option value="BRFRS1">BRFRS1</option>
+                            <option value="BRFGO1">BRFGO1 - Goiás</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-500 ml-1">TIPO DE INCIDENTE</label>
+                        <select id="tipo" class="input-dark w-full p-4" required>
+                            <option value="">Selecione o tipo...</option>
+                            <option value="Queda de Energia">Queda de Energia</option>
+                            <option value="Queda de Internet">Queda de Internet</option>
+                            <option value="Esteira Parada">Esteira Parada</option>
+                            <option value="Sistema Indisponível">Sistema Indisponível</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-500 ml-1">ÁREA CRÍTICA</label>
+                        <select id="area" class="input-dark w-full p-4" required>
+                            <option value="">Selecione a área...</option>
+                            <option value="INBOUND">INBOUND</option>
+                            <option value="PICKING">PICKING</option>
+                            <option value="CHECKING">CHECKING</option>
+                            <option value="SHIPPING">SHIPPING</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-gray-500 ml-1">DOWNTIME (MINUTOS)</label>
+                        <input type="number" id="tempo" class="input-dark w-full p-4" placeholder="Ex: 45" required>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 ml-1">DESCRIÇÃO DETALHADA</label>
+                    <textarea id="desc" class="input-dark w-full p-4 h-32 resize-none" placeholder="Relate o ocorrido com detalhes técnicos..." required></textarea>
+                </div>
+                <button type="submit" id="btnSave" class="neo-button w-full p-5 font-black uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3">
+                    <i class="fas fa-bolt"></i> TRANSMITIR DADOS
+                </button>
+            </form>
+        </div>
         
-        <!-- REGISTRO -->
-        <section id="section-registro" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 card-master">
-                <h2 class="text-sm font-bold mb-6 text-orange-500 uppercase"><i class="fas fa-plus mr-2"></i>Nova Ocorrência</h2>
-                <form id="incidentForm" onsubmit="handleRegister(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="kpi-label">CD Operacional</label>
-                            <select id="cd" class="input-premium mt-1" required>
-                                <option value="BRFPE1">BRFPE1</option>
-                                <option value="BRFSP1">BRFSP1</option>
-                                <option value="BRFSP2">BRFSP2</option>
-                                <option value="BRFGO1">BRFGO1</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="kpi-label">Tipo de Ocorrência</label>
-                            <select id="tipo" class="input-premium mt-1" required>
-                                <option value="Queda de Energia">Queda de Energia</option>
-                                <option value="Queda de Internet">Queda de Internet</option>
-                                <option value="Esteira Parada">Esteira Parada</option>
-                                <option value="Sistema Indisponível">Sistema Indisponível</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="kpi-label">Área</label>
-                            <select id="area" class="input-premium mt-1" required>
-                                <option value="INBOUND">INBOUND</option>
-                                <option value="PICKING">PICKING</option>
-                                <option value="CHECKING">CHECKING</option>
-                                <option value="SHIPPING">SHIPPING</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="kpi-label">Tempo Parado (min)</label>
-                            <input type="number" id="tempo" class="input-premium mt-1" required>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="kpi-label">Descrição</label>
-                        <textarea id="desc" class="input-premium mt-1 h-20 py-2 resize-none" required></textarea>
-                    </div>
-                    <button type="submit" id="btnSave" class="btn-shopee">Salvar Registro</button>
-                </form>
+        <div class="space-y-8">
+            <div class="glass-card p-6 border-l-4 border-orange-500">
+                <h3 class="font-bold text-orange-500 mb-2 uppercase text-xs">Aviso de Operação</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Os dados inseridos aqui alimentam os dashboards de produtividade em tempo real da regional SPX.</p>
             </div>
-            <div class="card-master h-fit">
-                <h3 class="kpi-label mb-4">Informações</h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-slate-500">Usuário:</span>
-                        <span id="user-display" class="font-bold text-xs"></span>
-                    </div>
-                    <div class="flex justify-between border-b border-white/5 pb-2">
-                        <span class="text-slate-500">Data:</span>
-                        <span id="live-date"></span>
-                    </div>
+            <div class="glass-card p-8 text-center">
+                <p class="text-gray-500 text-xs mb-2">STATUS DO SERVIDOR</p>
+                <div class="text-green-500 font-black text-2xl flex items-center justify-center gap-2">
+                    <span class="h-3 w-3 bg-green-500 rounded-full pulse"></span> SYNC ACTIVE
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- DASHBOARD -->
-        <section id="section-dashboard" class="hidden space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Total Ocorrências</div><div id="kpi-total" class="kpi-value text-white">0</div></div>
-                    <i class="fas fa-clipboard-list text-orange-500 text-2xl"></i>
-                </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Total Downtime</div><div id="kpi-minutos" class="kpi-value text-red-500">0</div></div>
-                    <i class="fas fa-clock text-red-500 text-2xl"></i>
-                </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">Média (min)</div><div id="kpi-media" class="kpi-value text-amber-500">0</div></div>
-                    <i class="fas fa-hourglass-half text-amber-500 text-2xl"></i>
-                </div>
-                <div class="kpi-card">
-                    <div><div class="kpi-label">CD Crítico</div><div id="kpi-setor" class="kpi-value text-purple-500">-</div></div>
-                    <i class="fas fa-exclamation-triangle text-purple-500 text-2xl"></i>
+    <!-- SECTION: DASHBOARD -->
+    <section id="section-dashboard" class="hidden space-y-8">
+        <!-- KPI GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-card p-6 group hover:border-orange-500/50 transition-all">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-4">Total Ocorrências</p>
+                <div class="flex justify-between items-end">
+                    <h2 id="kpi-total" class="kpi-value text-5xl font-black">0</h2>
+                    <i class="fas fa-layer-group text-2xl text-gray-700"></i>
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="chart-container">
-                    <h3 class="kpi-label mb-4">Incidentes por Tipo</h3>
-                    <canvas id="chartTipos"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 class="kpi-label mb-4">Minutos por Área</h3>
-                    <canvas id="chartImpacto"></canvas>
+            <div class="glass-card p-6 group hover:border-red-500/50 transition-all">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-4">Downtime Total</p>
+                <div class="flex justify-between items-end">
+                    <h2 id="kpi-minutos" class="kpi-value text-5xl font-black text-red-500">0</h2>
+                    <span class="text-xs text-red-800 font-bold mb-2">MINUTOS</span>
                 </div>
             </div>
-
-            <div class="card-master overflow-x-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="kpi-label">Histórico Recente</h3>
-                    <button onclick="syncData()" id="btnRefresh" class="text-[10px] bg-slate-800 px-3 py-1 rounded font-bold hover:bg-slate-700">ATUALIZAR</button>
+            <div class="glass-card p-6 group hover:border-amber-500/50 transition-all">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-4">Média/Incidente</p>
+                <div class="flex justify-between items-end">
+                    <h2 id="kpi-media" class="kpi-value text-5xl font-black text-amber-500">0</h2>
+                    <i class="fas fa-clock text-2xl text-gray-700"></i>
                 </div>
-                <table id="mainTable">
-                    <thead>
+            </div>
+            <div class="glass-card p-6 group hover:border-purple-500/50 transition-all">
+                <p class="text-gray-500 text-xs font-bold uppercase mb-4">Área Crítica</p>
+                <div class="flex justify-between items-end">
+                    <h2 id="kpi-setor" class="kpi-value text-2xl font-black text-purple-500 uppercase">-</h2>
+                    <i class="fas fa-exclamation-triangle text-2xl text-gray-700"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card p-8">
+                <h3 class="text-lg font-bold mb-8 uppercase tracking-widest">Incidentes por Tipo</h3>
+                <div class="h-80"><canvas id="chartTipos"></canvas></div>
+            </div>
+            <div class="glass-card p-8">
+                <h3 class="text-lg font-bold mb-8 uppercase tracking-widest">Impacto por Área (Downtime)</h3>
+                <div class="h-80"><canvas id="chartImpacto"></canvas></div>
+            </div>
+        </div>
+
+        <!-- HEATMAP -->
+        <div class="glass-card p-8 overflow-hidden">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-lg font-bold uppercase tracking-widest">Análise Horária de Incidentes</h3>
+                <div class="flex gap-4 text-[10px] text-gray-500 uppercase font-bold">
+                    <span class="flex items-center gap-1"><span class="h-2 w-2 bg-gray-800 rounded"></span> Zero</span>
+                    <span class="flex items-center gap-1"><span class="h-2 w-2 bg-orange-900 rounded"></span> Baixa</span>
+                    <span class="flex items-center gap-1"><span class="h-2 w-2 bg-orange-500 rounded"></span> Alta</span>
+                </div>
+            </div>
+            <div id="heatmapContainer" class="overflow-x-auto"></div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass-card overflow-hidden">
+            <div class="p-8 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-lg font-bold uppercase tracking-widest">Logs de Operação</h3>
+                <button onclick="syncData()" class="glass-card px-4 py-2 text-xs font-bold hover:bg-white/5 transition-all">
+                    <i class="fas fa-sync-alt mr-2"></i> REFRESH DATABASE
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-black/40 text-gray-500 text-[10px] uppercase font-bold tracking-widest">
                         <tr>
-                            <th>Data/Hora</th>
-                            <th>CD</th>
-                            <th>E-mail</th>
-                            <th>Tipo</th>
-                            <th>Área</th>
-                            <th>Tempo</th>
-                            <th>Descrição</th>
+                            <th class="p-6">Timestamp</th>
+                            <th class="p-6">CD</th>
+                            <th class="p-6">Incidente</th>
+                            <th class="p-6">Área</th>
+                            <th class="p-6">Downtime</th>
+                            <th class="p-6">Relator</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody"></tbody>
+                    <tbody id="tableBody" class="divide-y divide-white/5"></tbody>
                 </table>
             </div>
-
-            <div class="card-master">
-                <h3 class="kpi-label mb-4">Incidência por Horário (Heatmap)</h3>
-                <div id="heatmapContainer" class="overflow-x-auto"></div>
-            </div>
-        </section>
-    </main>
+        </div>
+    </section>
 </div>
 
+<!-- SCRIPTS -->
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyKbFNMvHsCOtIGlbcgcRcEFr3UhF7o5tXd1TGeu8V45r9HefID0ZQdW1vhiV0wSWg/exec";
+    // URL DO SEU WEB APP GERADO NO PASSO 1
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyXIlDelpZYY6jeH3Bz-CBq_RBNPpHgoodU6BefKYqAGKr1B9KfA-T0UuwmoSn0G3xW/exec"; 
+    
     let rawData = [];
     const chartInstances = {};
 
-    window.onload = () => {
-        checkSession();
-        document.getElementById('live-date').innerText = new Date().toLocaleDateString();
-    };
+    // Iniciar Relógio
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('pt-BR');
+    }, 1000);
 
+    // Login logic
     function handleLogin(e) {
         e.preventDefault();
         const email = document.getElementById('loginEmail').value;
-        sessionStorage.setItem("shopee_user", email);
-        checkSession();
+        sessionStorage.setItem("spx_user", email);
+        showMain();
     }
 
-    function checkSession() {
-        const user = sessionStorage.getItem("shopee_user");
+    function showMain() {
+        const user = sessionStorage.getItem("spx_user");
         if (user) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-interface').classList.remove('hidden');
@@ -326,21 +331,24 @@
     function switchTab(tab) {
         document.getElementById('section-registro').classList.toggle('hidden', tab !== 'registro');
         document.getElementById('section-dashboard').classList.toggle('hidden', tab !== 'dashboard');
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
+        
+        document.getElementById('tab-registro').classList.toggle('active-tab', tab === 'registro');
+        document.getElementById('tab-dashboard').classList.toggle('active-tab', tab === 'dashboard');
+        
         if (tab === 'dashboard') syncData();
     }
 
+    // REGISTRO
     async function handleRegister(e) {
         e.preventDefault();
         const btn = document.getElementById('btnSave');
         btn.disabled = true;
-        btn.innerHTML = '<span class="loader"></span>';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> TRANSMITINDO...';
 
         const payload = {
             timestamp: new Date().toLocaleString('pt-BR'),
             cd: document.getElementById('cd').value,
-            email: sessionStorage.getItem("shopee_user"),
+            email: sessionStorage.getItem("spx_user"),
             tipoOcorrencia: document.getElementById('tipo').value,
             area: document.getElementById('area').value,
             tempoParado: document.getElementById('tempo').value,
@@ -353,134 +361,143 @@
                 mode: 'no-cors',
                 body: JSON.stringify(payload)
             });
-            alert("✅ Sucesso!");
+            alert("✅ PROTOCOLO TRANSMITIDO COM SUCESSO");
             document.getElementById('incidentForm').reset();
         } catch (err) {
-            alert("Erro ao salvar.");
+            alert("❌ ERRO NA TRANSMISSÃO");
         } finally {
             btn.disabled = false;
-            btn.innerText = "Salvar Registro";
+            btn.innerHTML = '<i class="fas fa-bolt"></i> TRANSMITIR DADOS';
         }
     }
 
+    // SYNC DATA
     async function syncData() {
-        const btn = document.getElementById('btnRefresh');
-        btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>';
         try {
-            const response = await fetch(WEB_APP_URL);
-            const data = await response.json();
-            
-            // Mapeamento exato baseado nos nomes das colunas da planilha da imagem
-            rawData = data.map(item => ({
-                timestamp: item["Timestamp"] || "",
-                cd: item["CD"] || "",
-                email: item["E-mail"] || "",
-                tipo: item["Tipo de Ocorrência"] || "",
-                area: item["Área"] || "",
-                tempo: parseFloat(item["Tempo Parado (min)"]) || 0,
-                desc: item["Descrição"] || ""
-            }));
-
+            const resp = await fetch(WEB_APP_URL);
+            rawData = await resp.json();
             updateDashboard();
         } catch (err) {
-            console.error(err);
-        } finally {
-            btn.innerText = "ATUALIZAR";
+            console.error("Fetch error:", err);
         }
     }
 
     function updateDashboard() {
-        const total = rawData.length;
-        const totalMin = rawData.reduce((acc, curr) => acc + curr.tempo, 0);
-        
+        // Mapeando dados da planilha para o formato do Dashboard
+        // Nome das colunas no Sheet: Timestamp, CD, E-mail, Tipo de Ocorrência, Área, Tempo Parado (min), Descrição
+        const data = rawData.map(r => ({
+            ts: r["Timestamp"],
+            cd: r["CD"],
+            tipo: r["Tipo de Ocorrência"],
+            area: r["Área"],
+            tempo: parseFloat(r["Tempo Parado (min)"]) || 0,
+            user: r["E-mail"]
+        }));
+
+        // KPIs
+        const total = data.length;
+        const totalMin = data.reduce((acc, c) => acc + c.tempo, 0);
         document.getElementById('kpi-total').innerText = total;
-        document.getElementById('kpi-minutos').innerText = totalMin + " min";
-        document.getElementById('kpi-media').innerText = total > 0 ? (totalMin / total).toFixed(1) : 0;
+        document.getElementById('kpi-minutos').innerText = totalMin;
+        document.getElementById('kpi-media').innerText = total ? (totalMin / total).toFixed(1) : 0;
+        
+        const areaCounts = {};
+        data.forEach(r => areaCounts[r.area] = (areaCounts[r.area] || 0) + 1);
+        const topArea = Object.keys(areaCounts).sort((a,b) => areaCounts[b]-areaCounts[a])[0] || "-";
+        document.getElementById('kpi-setor').innerText = topArea;
 
-        const cdCounts = {};
-        rawData.forEach(r => cdCounts[r.cd] = (cdCounts[r.cd] || 0) + 1);
-        document.getElementById('kpi-setor').innerText = Object.keys(cdCounts).reduce((a, b) => cdCounts[a] > cdCounts[b] ? a : b, "-");
-
-        renderTable();
-        renderCharts();
-        renderHeatmap();
+        renderCharts(data);
+        renderTable(data);
+        renderHeatmap(data);
     }
 
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = rawData.slice(-20).reverse().map(r => `
-            <tr>
-                <td class="text-slate-500 font-mono text-[10px]">${r.timestamp}</td>
-                <td class="font-bold text-blue-400">${r.cd}</td>
-                <td class="text-slate-400 text-[10px]">${r.email}</td>
-                <td class="text-orange-500">${r.tipo}</td>
-                <td class="text-purple-400 font-bold">${r.area}</td>
-                <td class="font-bold text-red-500">${r.tempo}</td>
-                <td class="truncate max-w-[200px] text-slate-400">${r.desc}</td>
-            </tr>
-        `).join('');
+    function renderCharts(data) {
+        // Tipos Chart
+        const tiposMap = {};
+        data.forEach(r => tiposMap[r.tipo] = (tiposMap[r.tipo] || 0) + 1);
+        updateChart('chartTipos', 'bar', Object.keys(tiposMap), Object.values(tiposMap), '#ee4d2d');
+
+        // Impacto Chart
+        const areaMap = {};
+        data.forEach(r => areaMap[r.area] = (areaMap[r.area] || 0) + r.tempo);
+        updateChart('chartImpacto', 'doughnut', Object.keys(areaMap), Object.values(areaMap), ['#ee4d2d', '#2563eb', '#7c3aed', '#db2777']);
     }
 
-    function renderCharts() {
-        const tipos = {};
-        rawData.forEach(r => tipos[r.tipo] = (tipos[r.tipo] || 0) + 1);
-        createChart('chartTipos', 'bar', Object.keys(tipos), Object.values(tipos), '#ee4d2d');
-
-        const areas = {};
-        rawData.forEach(r => areas[r.area] = (areas[r.area] || 0) + r.tempo);
-        createChart('chartImpacto', 'doughnut', Object.keys(areas), Object.values(areas), ['#2f81f7','#3fb950','#8957e5','#ee4d2d']);
-    }
-
-    function createChart(id, type, labels, data, color) {
+    function updateChart(id, type, labels, dataSet, color) {
         if (chartInstances[id]) chartInstances[id].destroy();
         const ctx = document.getElementById(id).getContext('2d');
+        
+        Chart.defaults.color = '#64748b';
+        Chart.defaults.font.family = 'JetBrains Mono';
+
         chartInstances[id] = new Chart(ctx, {
             type: type,
             data: {
                 labels: labels,
-                datasets: [{ data: data, backgroundColor: color, borderWidth: 0 }]
+                datasets: [{
+                    data: dataSet,
+                    backgroundColor: color,
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 2,
+                    borderRadius: 5
+                }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#8b949e', font: { size: 10 } } } },
+                plugins: { legend: { display: type === 'doughnut', position: 'bottom' } },
                 scales: type === 'bar' ? {
-                    y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
-                    x: { ticks: { color: '#8b949e' } }
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' } },
+                    x: { grid: { display: false } }
                 } : {}
             }
         });
     }
 
-    function renderHeatmap() {
-        const matrix = Array(7).fill(0).map(() => Array(24).fill(0));
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = data.slice(-15).reverse().map(r => `
+            <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="p-6 font-mono text-[10px] text-gray-500">${r.ts}</td>
+                <td class="p-6 font-bold text-blue-400">${r.cd}</td>
+                <td class="p-6 text-orange-500 font-bold">${r.tipo}</td>
+                <td class="p-6"><span class="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full text-[10px] font-bold">${r.area}</span></td>
+                <td class="p-6 font-mono text-red-500">${r.tempo}m</td>
+                <td class="p-6 text-gray-500 text-xs">${r.user.split('@')[0]}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderHeatmap(data) {
         const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-        
-        rawData.forEach(r => {
+        const matrix = Array(7).fill(0).map(() => Array(24).fill(0));
+
+        data.forEach(r => {
             try {
-                // Tenta converter "DD/MM/YYYY HH:MM:SS"
-                const parts = r.timestamp.split(' ');
-                const dateParts = parts[0].split('/');
-                const timeParts = parts[1].split(':');
-                const d = new Date(dateParts[2], dateParts[1]-1, dateParts[0]);
-                const day = d.getDay();
-                const hour = parseInt(timeParts[0]);
-                if(!isNaN(day) && !isNaN(hour)) matrix[day][hour]++;
+                const [dStr, tStr] = r.ts.split(' ');
+                const [day, month, year] = dStr.split('/');
+                const date = new Date(year, month - 1, day);
+                const hour = parseInt(tStr.split(':')[0]);
+                matrix[date.getDay()][hour]++;
             } catch(e) {}
         });
 
-        let html = '<div class="heatmap-grid min-w-[800px]"><div class="h-4"></div>';
-        for(let h=0; h<24; h++) html += `<div class="text-center text-[9px] text-slate-500">${h}h</div>`;
+        let html = `<div class="heatmap-grid"><div class="h-8"></div>`;
+        for(let h=0; h<24; h++) html += `<div class="text-[9px] text-gray-600 font-bold text-center">${h}h</div>`;
         
-        matrix.forEach((row, d) => {
-            html += `<div class="text-[10px] font-bold text-slate-400">${days[d]}</div>`;
-            row.forEach(v => {
-                const bg = v > 0 ? `rgba(238, 77, 45, ${Math.min(v * 0.3, 1)})` : '#161b22';
-                html += `<div class="heatmap-cell" style="background: ${bg}">${v || ''}</div>`;
+        matrix.forEach((row, dIdx) => {
+            html += `<div class="text-[10px] font-bold text-gray-500 flex items-center h-7">${days[dIdx]}</div>`;
+            row.forEach(val => {
+                const intensity = Math.min(val * 0.3, 1);
+                const color = val > 0 ? `rgba(238, 77, 45, ${intensity})` : 'rgba(255,255,255,0.03)';
+                html += `<div class="heatmap-cell" style="background: ${color}" title="${val} incidentes"></div>`;
             });
         });
-        document.getElementById('heatmapContainer').innerHTML = html + '</div>';
+        html += `</div>`;
+        document.getElementById('heatmapContainer').innerHTML = html;
     }
+
+    window.onload = showMain;
 </script>
 </body>
 </html>
